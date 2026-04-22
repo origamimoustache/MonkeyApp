@@ -79,7 +79,7 @@ df = pd.DataFrame(data, columns=["lat", "lon", "species"])
 # ------------------ SESSION STATE ------------------
 if "index" not in st.session_state:
    st.session_state.index = 0
-   st.session_state.health = 100
+   st.session_state.population = 100
 
 current = df.iloc[st.session_state.index]
 
@@ -122,8 +122,8 @@ with col2:
    st.markdown("### 🐾 Species Here")
    st.success(current["species"])
 
-   st.markdown("### ❤️ Health")
-   st.progress(st.session_state.health / 100, text=f"Health: {st.session_state.health}/100")
+   st.markdown("### 🙈🙉🙊 Population")
+   st.progress(st.session_state.population / 100, text=f"population: {st.session_state.population}/100")
 
    # --- DECISION ---
    st.markdown("### 🎮 Choose Your Path")
@@ -141,26 +141,26 @@ with col2:
 
        if choice == "🌳 Stay in forest (safe)":
            loss = random.randint(1, 5)
-           st.success(f"Safe move! -{loss} health")
+           st.success(f"Safe move! -{loss} population")
 
        elif choice == "⚠️ Cross deforested land (risky)":
            loss = random.randint(10, 25)
-           st.error(f"Dangerous crossing! -{loss} health")
+           st.error(f"Dangerous crossing! -{loss} population")
 
        else:
            loss = random.randint(5, 15)
-           st.warning(f"Moderate risk! -{loss} health")
+           st.warning(f"Moderate risk! -{loss} population")
 
-       st.session_state.health -= loss
+       st.session_state.population -= loss
        st.session_state.index = (st.session_state.index + 1) % len(df)
 
        st.rerun()
 
    # --- GAME END ---
-   if st.session_state.health <= 0:
+   if st.session_state.population <= 0:
        st.error("💀 You did not survive the migration.")
        if st.button("Restart"):
-           st.session_state.health = 100
+           st.session_state.population = 100
            st.session_state.index = 0
            st.rerun()
 
