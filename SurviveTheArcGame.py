@@ -123,7 +123,7 @@ with col2:
    st.success(current["species"])
 
    st.markdown("### ❤️ Health")
-   st.progress(st.session_state.health / 100)
+   st.progress(st.session_state.health / 100, text=f"Health: {st.session_state.health}/100")
 
    # --- DECISION ---
    st.markdown("### 🎮 Choose Your Path")
