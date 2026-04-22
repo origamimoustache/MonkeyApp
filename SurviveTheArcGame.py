@@ -144,18 +144,18 @@ with col2:
    st.info(get_population_display(pop))
    
    def get_population_display(pop):
-   if pop <= 0:
-       return "💀 0 / 100"
-   elif pop > 75:
-       return "🐒🐒🐒🐒🐒 " + f"{pop}/100"
-   elif pop > 50:
-       return "🐒🐒🐒🐒 " + f"{pop}/100"
-   elif pop > 25:
-       return "🐒🐒🐒 " + f"{pop}/100"
-   elif pop > 10:
-       return "🐒🐒 " + f"{pop}/100"
-   else:
-       return "🐒 " + f"{pop}/100"
+      if pop <= 0:
+          return "💀 0 / 100"
+      elif pop > 75:
+          return "🐒🐒🐒🐒🐒 " + f"{pop}/100"
+      elif pop > 50:
+          return "🐒🐒🐒🐒 " + f"{pop}/100"
+      elif pop > 25:
+          return "🐒🐒🐒 " + f"{pop}/100"
+      elif pop > 10:
+          return "🐒🐒 " + f"{pop}/100"
+      else:
+          return "🐒 " + f"{pop}/100"
    # --- DECISION ---
    st.markdown("### 🎮 Choose Your Path")
 
