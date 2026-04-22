@@ -81,6 +81,17 @@ if "index" not in st.session_state:
    st.session_state.index = 0
    st.session_state.population = 100
 
+if "message" not in st.session_state:
+   st.session_state.message = "Your journey begins in the Amazon arc..."
+
+def update_message(choice, loss):
+   if choice == "🌳 Stay in forest (safe)":
+       return "You move cautiously through dense canopy. The forest shelters you."
+   elif choice == "⚠️ Cross deforested land (risky)":
+       return f"You cross exposed land... predators and heat take their toll (-{loss})."
+   else:
+       return f"You follow river corridors, balancing safety and exposure (-{loss})."
+
 current = df.iloc[st.session_state.index]
 
 # ------------------ LAYOUT ------------------
@@ -109,11 +120,13 @@ with col1:
        icon=folium.Icon(color="red")
    ).add_to(m)
 
-   st_folium(m, width=700, height=500)
+   st_folium(m, width=900, height=700)
 
 # ================== GAME PANEL ==================
 with col2:
    st.subheader("🐒 Survival Panel")
+   st.markdown("### 📖 Story Log")
+   st.text_area("", st.session_state.message, height=120)
 
    # --- STATUS CARD ---
    st.markdown("### 📍 Current Location")
@@ -123,8 +136,26 @@ with col2:
    st.success(current["species"])
 
    st.markdown("### 🙈🙉🙊 Population")
-   st.progress(st.session_state.population / 100, text=f"population: {st.session_state.population}/100")
+   pop = st.session_state.population
 
+   st.progress(pop / 100 if pop > 0 else 0)
+
+   st.markdown("### 🙈🙉🙊 Population")
+   st.info(get_population_display(pop))
+   
+   def get_population_display(pop):
+   if pop <= 0:
+       return "💀 0 / 100"
+   elif pop > 75:
+       return "🐒🐒🐒🐒🐒 " + f"{pop}/100"
+   elif pop > 50:
+       return "🐒🐒🐒🐒 " + f"{pop}/100"
+   elif pop > 25:
+       return "🐒🐒🐒 " + f"{pop}/100"
+   elif pop > 10:
+       return "🐒🐒 " + f"{pop}/100"
+   else:
+       return "🐒 " + f"{pop}/100"
    # --- DECISION ---
    st.markdown("### 🎮 Choose Your Path")
 
@@ -151,7 +182,9 @@ with col2:
            loss = random.randint(5, 15)
            st.warning(f"Moderate risk! -{loss} population")
 
-       st.session_state.population -= loss
+
+       st.session_state.message = update_message(choice, loss)
+       st.session_state.population = max(0, st.session_state.population - loss)
        st.session_state.index = (st.session_state.index + 1) % len(df)
 
        st.rerun()
@@ -167,7 +200,7 @@ with col2:
 # ------------------ FOOTER ------------------
 st.markdown("---")
 st.markdown(
-   "📊 Based on real primate occurrence data from the Amazon arc of deforestation (2015–2018)."
+   "📊 Based on real primate occurrence data from:"
 )
 st.markdown(
    "Costa-Araújo, R., Canale, G. R., de Melo, F. R., da Silva, R. R., da Silva, I. B., de Alencar, R. M., da Silva, L. F., Jerusalinsky, L., de Azevedo, R. B., Santos Júnior, E. M., Mourthé, I., Ruz, E. J. H., Silva-Jr, J. S. E., Roos, C., Farias, I. P., & Hrbek, T. (2024). A dataset of new occurrence records of primates from the arc of deforestation, Brazil. Primate biology, 11(1), 1–11. https://doi.org/10.5194/pb-11-1-2024"
