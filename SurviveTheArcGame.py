@@ -167,6 +167,6 @@ with col2:
 # ------------------ FOOTER ------------------
 st.markdown("---")
 st.markdown(
-   "📊 Based on real primate occurrence data from the Amazon arc of deforestation (2015–2018)."
+   "📊 Based on real primate occurrence data from the Amazon arc of deforestation (2015–2018). Costa-Araújo, R., Canale, G. R., de Melo, F. R., da Silva, R. R., da Silva, I. B., de Alencar, R. M., da Silva, L. F., Jerusalinsky, L., de Azevedo, R. B., Santos Júnior, E. M., Mourthé, I., Ruz, E. J. H., Silva-Jr, J. S. E., Roos, C., Farias, I. P., & Hrbek, T. (2024). A dataset of new occurrence records of primates from the arc of deforestation, Brazil. Primate biology, 11(1), 1–11. https://doi.org/10.5194/pb-11-1-2024"
 )
 
