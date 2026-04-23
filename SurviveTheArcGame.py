@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import random
 import folium
+import time
+from folium.plugins import HeatMap
 from streamlit_folium import st_folium
 
 # ------------------ PAGE CONFIG ------------------
@@ -90,21 +92,40 @@ def get_population_display(pop):
     if pop <= 0:
         return "💀 0 / 100"
     elif pop > 75:
-        return "🐒🐒🐒🐒🐒 " + f"{pop}/100"
+        return "🟢 Healthy 🐒🐒🐒🐒 " + f"{pop}/100"
     elif pop > 50:
-        return "🐒🐒🐒🐒 " + f"{pop}/100"
+        return "🟡 Stable 🐒🐒🐒 " + f"{pop}/100"
     elif pop > 25:
-        return "🐒🐒🐒 " + f"{pop}/100"
-    elif pop > 10:
-        return "🐒🐒 " + f"{pop}/100"
+        return "🟠 Endangered 🐒🐒 " + f"{pop}/100"
     else:
-        return "🐒 " + f"{pop}/100"
+        return "🔴 Critical 🐒 " + f"{pop}/100"
+
+def get_species_modifier(species):
+    if "Ateles" in species:
+        return 1.5
+    elif "Sapajus" in species:
+        return 0.8
+    return 1
 
 # ------------------ SESSION STATE ------------------
 if "index" not in st.session_state:
     st.session_state.index = 0
     st.session_state.population = 100
     st.session_state.message = "Your journey begins in the Amazon arc..."
+
+if "index" not in st.session_state:
+    st.session_state.index = 0
+    st.session_state.population = 100
+    st.session_state.history = []
+    st.session_state.path = []
+    st.session_state.path_weights = []
+    st.session_state.replay_mode = False
+    st.session_state.replay_index = 0
+
+# Initialize starting point
+if len(st.session_state.path) == 0:
+    start = df.iloc[st.session_state.index]
+    st.session_state.path.append([start["lat"], start["lon"]])
 
 # ------------------ CURRENT STATE ------------------
 current = df.iloc[st.session_state.index]
@@ -116,23 +137,44 @@ col1, col2 = st.columns([2, 1])
 # ================== MAP ==================
 with col1:
     st.subheader("🗺️ Migration Map")
-
     m = folium.Map(location=[-8, -55], zoom_start=5)
 
+   # All points
     for _, row in df.iterrows():
         folium.CircleMarker(
             location=[row["lat"], row["lon"]],
-            radius=6,
-            popup=row["species"],
+            radius=5,
             color="green",
             fill=True
         ).add_to(m)
 
-    folium.Marker(
-        location=[current["lat"], current["lon"]],
-        popup="You are here",
-        icon=folium.Icon(color="red")
-    ).add_to(m)
+    # Trail line
+    if len(st.session_state.path) > 1:
+        folium.PolyLine(
+            st.session_state.path,
+            color="blue",
+            weight=4
+        ).add_to(m)
+
+    # Heatmap
+    if len(st.session_state.path_weights) > 0:
+        heat_data = [
+            [lat, lon, weight]
+            for (lat, lon), weight in zip(st.session_state.path, st.session_state.path_weights)
+        ]
+        HeatMap(heat_data, radius=25).add_to(m)
+
+    # Marker (replay or live)
+    if st.session_state.replay_mode:
+        idx = st.session_state.replay_index
+        if idx < len(st.session_state.path):
+            point = st.session_state.path[idx]
+            folium.Marker(location=point, icon=folium.Icon(color="blue")).add_to(m)
+    else:
+        folium.Marker(
+            location=[current["lat"], current["lon"]],
+            icon=folium.Icon(color="red")
+        ).add_to(m)
 
     st_folium(m, width=1200, height=700)
 
@@ -157,6 +199,13 @@ with col2:
     st.progress(pop / 100 if pop > 0 else 0)
     st.info(get_population_display(pop))
 
+    if pop < 25:
+        st.error("⚠️ Critical population!")
+
+    st.markdown("### 📜 Recent Events")
+    for h in st.session_state.history[-3:][::-1]:
+        st.write(f"- {h}")
+    
     # --- CHOICES (ALWAYS VISIBLE) ---
     st.markdown("### 🎮 Choose Your Path")
 
@@ -169,26 +218,61 @@ with col2:
         ]
     )
 
-    # --- ACTION ---
-    if st.button("➡️ Move to Next Location"):
-
-        if choice == "🌳 Stay in forest (safe)":
-            loss = random.randint(1, 5)
-            st.success(f"Safe move! -{loss} population")
-
-        elif choice == "⚠️ Cross deforested land (risky)":
-            loss = random.randint(10, 25)
-            st.error(f"Dangerous crossing! -{loss} population")
-
-        else:
-            loss = random.randint(5, 15)
-            st.warning(f"Moderate risk! -{loss} population")
-
-        st.session_state.message = update_message(choice, loss)
-        st.session_state.population = max(0, pop - loss)
-        st.session_state.index = (st.session_state.index + 1) % len(df)
-
+    # --- REPLAY BUTTON ---
+    if st.button("🎬 Replay Journey"):
+        st.session_state.replay_mode = True
+        st.session_state.replay_index = 0
         st.rerun()
+
+    # --- NORMAL GAMEPLAY (disabled during replay) ---
+    if not st.session_state.replay_mode:
+
+        choice = st.radio(
+            "Choose movement:",
+            ["🌳 Forest", "⚠️ Deforested", "🌊 River"]
+        )
+
+        if st.button("➡️ Move"):
+
+            # base loss
+            if choice == "🌳 Forest":
+                loss = random.randint(1, 5)
+            elif choice == "⚠️ Deforested":
+                loss = random.randint(10, 25)
+            else:
+                loss = random.randint(5, 15)
+
+            # species modifier
+            loss = int(loss * get_species_modifier(current["species"]))
+
+            # update population
+            st.session_state.population = max(0, pop - loss)
+
+            # update location
+            st.session_state.index = (st.session_state.index + 1) % len(df)
+
+            new_point = [
+                df.iloc[st.session_state.index]["lat"],
+                df.iloc[st.session_state.index]["lon"]
+            ]
+
+            st.session_state.path.append(new_point)
+            st.session_state.path_weights.append(loss)
+
+            st.session_state.history.append(f"{choice} → -{loss}")
+
+            st.rerun()
+
+    # --- REPLAY LOGIC ---
+    if st.session_state.replay_mode:
+        st.info("🎬 Replaying journey...")
+
+        if st.session_state.replay_index < len(st.session_state.path):
+            time.sleep(0.4)
+            st.session_state.replay_index += 1
+            st.rerun()
+        else:
+            st.session_state.replay_mode = False
 
     # --- GAME OVER ---
     if st.session_state.population <= 0:
