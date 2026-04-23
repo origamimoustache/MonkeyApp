@@ -110,16 +110,26 @@ def get_species_modifier(species):
 # ------------------ SESSION STATE ------------------
 if "index" not in st.session_state:
     st.session_state.index = 0
+
+if "population" not in st.session_state:
     st.session_state.population = 100
+
+if "message" not in st.session_state:
     st.session_state.message = "Your journey begins in the Amazon arc..."
 
-if "index" not in st.session_state:
-    st.session_state.index = 0
-    st.session_state.population = 100
+if "history" not in st.session_state:
     st.session_state.history = []
+
+if "path" not in st.session_state:
     st.session_state.path = []
+
+if "path_weights" not in st.session_state:
     st.session_state.path_weights = []
+
+if "replay_mode" not in st.session_state:
     st.session_state.replay_mode = False
+
+if "replay_index" not in st.session_state:
     st.session_state.replay_index = 0
 
 # Initialize starting point
