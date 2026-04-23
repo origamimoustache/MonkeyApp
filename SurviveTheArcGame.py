@@ -184,7 +184,7 @@ with col2:
         icon=folium.Icon(color="red")
     ).add_to(m)
     
-    st_folium(m, width=700, height=700)
+    st_folium(m, width=900, height=700)
 
 # ================== GAME PANEL ==================
 with col3:
@@ -201,10 +201,6 @@ with col3:
 
     if pop < 25:
         st.error("⚠️ Critical population!")
-
-    st.markdown("### 📜 Recent Events")
-    for h in st.session_state.history[-3:][::-1]:
-        st.write(f"- {h}")
     
     # --- CHOICES (ALWAYS VISIBLE) ---
     st.markdown("### 🎮 Choose Your Path")
