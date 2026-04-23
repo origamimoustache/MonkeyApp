@@ -92,6 +92,20 @@ def update_message(choice, loss):
    else:
        return f"You follow river corridors, balancing safety and exposure (-{loss})."
 
+def get_population_display(pop):
+      if pop <= 0:
+          return "💀 0 / 100"
+      elif pop > 75:
+          return "🐒🐒🐒🐒🐒 " + f"{pop}/100"
+      elif pop > 50:
+          return "🐒🐒🐒🐒 " + f"{pop}/100"
+      elif pop > 25:
+          return "🐒🐒🐒 " + f"{pop}/100"
+      elif pop > 10:
+          return "🐒🐒 " + f"{pop}/100"
+      else:
+          return "🐒 " + f"{pop}/100"
+
 current = df.iloc[st.session_state.index]
 
 # ------------------ LAYOUT ------------------
@@ -136,26 +150,10 @@ with col2:
    st.success(current["species"])
 
    st.markdown("### 🙈🙉🙊 Population")
-   pop = st.session_state.population
 
    st.progress(pop / 100 if pop > 0 else 0)
-
-   st.markdown("### 🙈🙉🙊 Population")
    st.info(get_population_display(pop))
    
-   def get_population_display(pop):
-      if pop <= 0:
-          return "💀 0 / 100"
-      elif pop > 75:
-          return "🐒🐒🐒🐒🐒 " + f"{pop}/100"
-      elif pop > 50:
-          return "🐒🐒🐒🐒 " + f"{pop}/100"
-      elif pop > 25:
-          return "🐒🐒🐒 " + f"{pop}/100"
-      elif pop > 10:
-          return "🐒🐒 " + f"{pop}/100"
-      else:
-          return "🐒 " + f"{pop}/100"
    # --- DECISION ---
    st.markdown("### 🎮 Choose Your Path")
 
