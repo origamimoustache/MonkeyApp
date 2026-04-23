@@ -135,20 +135,23 @@ current = df.iloc[st.session_state.index]
 pop = st.session_state.population
 
 # ------------------ LAYOUT ------------------
-col1, col2 = st.columns([2, 1])
+col1, col2, col3 = st.columns([1, 2, 1])
 
-# ================== MAP ==================
+# ------------------ Species and Location ------------------
 with col1:
-    st.subheader("🗺️ Migration Map")
-    m = folium.Map(location=[-8, -55], zoom_start=5)
-
-    # --- LOCATION ---
+     # --- LOCATION ---
     st.markdown("### 📍 Current Location (Lon, Lat)")
     st.info(f"{current['lat']:.2f}, {current['lon']:.2f}")
 
     # --- SPECIES ---
     st.markdown("### 🐾 Species Here")
     st.success(current["species"])
+
+
+# ================== MAP ==================
+with col2:
+    st.subheader("🗺️ Migration Map")
+    m = folium.Map(location=[-8, -55], zoom_start=5)
     
    # All points
     for _, row in df.iterrows():
@@ -184,7 +187,7 @@ with col1:
     st_folium(m, width=1100, height=700)
 
 # ================== GAME PANEL ==================
-with col2:
+with col3:
     st.subheader("🐒 Survival Panel")
 
     # --- STORY ---
