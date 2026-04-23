@@ -87,7 +87,6 @@ def update_message(choice, loss):
     else:
         return f"You follow river corridors, balancing safety and exposure (-{loss})."
 
-
 def get_population_display(pop):
     if pop <= 0:
         return "💀 0 / 100"
@@ -125,12 +124,6 @@ if "path" not in st.session_state:
 
 if "path_weights" not in st.session_state:
     st.session_state.path_weights = []
-
-if "replay_mode" not in st.session_state:
-    st.session_state.replay_mode = False
-
-if "replay_index" not in st.session_state:
-    st.session_state.replay_index = 0
 
 # Initialize starting point
 if len(st.session_state.path) == 0:
@@ -174,19 +167,11 @@ with col1:
         ]
         HeatMap(heat_data, radius=25).add_to(m)
 
-    # Marker (replay or live)
-    if st.session_state.replay_mode:
-        idx = st.session_state.replay_index
-        if idx < len(st.session_state.path):
-            point = st.session_state.path[idx]
-            folium.Marker(location=point, icon=folium.Icon(color="blue")).add_to(m)
-    else:
-        folium.Marker(
-            location=[current["lat"], current["lon"]],
-            icon=folium.Icon(color="red")
-        ).add_to(m)
-
-    st_folium(m, width=1200, height=700)
+    # Current position marker
+    folium.Marker(
+        location=[current["lat"], current["lon"]],
+        icon=folium.Icon(color="red")
+    ).add_to(m)
 
 # ================== GAME PANEL ==================
 with col2:
@@ -228,20 +213,7 @@ with col2:
         ]
     )
 
-    # --- REPLAY BUTTON ---
-    if st.button("🎬 Replay Journey"):
-        st.session_state.replay_mode = True
-        st.session_state.replay_index = 0
-        st.rerun()
-
-    # --- NORMAL GAMEPLAY (disabled during replay) ---
-    if not st.session_state.replay_mode:
-
-        choice = st.radio(
-            "Choose movement:",
-            ["🌳 Forest", "⚠️ Deforested", "🌊 River"]
-        )
-
+    # --- NORMAL GAMEPLAY ---
         if st.button("➡️ Move"):
 
             # base loss
@@ -251,38 +223,31 @@ with col2:
                 loss = random.randint(10, 25)
             else:
                 loss = random.randint(5, 15)
-
+        
             # species modifier
             loss = int(loss * get_species_modifier(current["species"]))
-
+        
             # update population
             st.session_state.population = max(0, pop - loss)
-
+        
+            # ✅ UPDATE STORY MESSAGE HERE
+           st.session_state.message += "\n\n" + update_message(choice, loss)
+        
             # update location
             st.session_state.index = (st.session_state.index + 1) % len(df)
-
+        
             new_point = [
                 df.iloc[st.session_state.index]["lat"],
                 df.iloc[st.session_state.index]["lon"]
             ]
-
+        
             st.session_state.path.append(new_point)
             st.session_state.path_weights.append(loss)
-
+        
+            # update history
             st.session_state.history.append(f"{choice} → -{loss}")
-
+        
             st.rerun()
-
-    # --- REPLAY LOGIC ---
-    if st.session_state.replay_mode:
-        st.info("🎬 Replaying journey...")
-
-        if st.session_state.replay_index < len(st.session_state.path):
-            time.sleep(0.4)
-            st.session_state.replay_index += 1
-            st.rerun()
-        else:
-            st.session_state.replay_mode = False
 
     # --- GAME OVER ---
     if st.session_state.population <= 0:
