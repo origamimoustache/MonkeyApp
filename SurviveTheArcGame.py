@@ -142,6 +142,14 @@ with col1:
     st.subheader("🗺️ Migration Map")
     m = folium.Map(location=[-8, -55], zoom_start=5)
 
+    # --- LOCATION ---
+    st.markdown("### 📍 Current Location (Lon, Lat)")
+    st.info(f"{current['lat']:.2f}, {current['lon']:.2f}")
+
+    # --- SPECIES ---
+    st.markdown("### 🐾 Species Here")
+    st.success(current["species"])
+    
    # All points
     for _, row in df.iterrows():
         folium.CircleMarker(
@@ -175,10 +183,6 @@ folium.Marker(
 
 st_folium(m, width=1100, height=700)
 
-# --- SPECIES ---
-    st.markdown("### 🐾 Species Here")
-    st.success(current["species"])
-
 # ================== GAME PANEL ==================
 with col2:
     st.subheader("🐒 Survival Panel")
@@ -186,10 +190,6 @@ with col2:
     # --- STORY ---
     st.markdown("### 📖 Story Log")
     st.text_area("", st.session_state.message, height=120)
-
-    # --- LOCATION ---
-    st.markdown("### 📍 Current Location (Lon, Lat)")
-    st.info(f"{current['lat']:.2f}, {current['lon']:.2f}")
 
     # --- POPULATION ---
     st.markdown("### 🙈🙉🙊 Population")
