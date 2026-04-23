@@ -214,12 +214,12 @@ with col2:
     )
 
     # --- NORMAL GAMEPLAY ---
-        if st.button("➡️ Move"):
+    if st.button("➡️ Move"):
 
             # base loss
-            if choice == "🌳 Forest":
+            if choice == "🌳 Stay in forest (safe)":
                 loss = random.randint(1, 5)
-            elif choice == "⚠️ Deforested":
+            elif choice == "⚠️ Cross deforested land (risky)":
                 loss = random.randint(10, 25)
             else:
                 loss = random.randint(5, 15)
@@ -231,7 +231,7 @@ with col2:
             st.session_state.population = max(0, pop - loss)
         
             # ✅ UPDATE STORY MESSAGE HERE
-           st.session_state.message += "\n\n" + update_message(choice, loss)
+            st.session_state.message += "\n\n" + update_message(choice, loss)
         
             # update location
             st.session_state.index = (st.session_state.index + 1) % len(df)
