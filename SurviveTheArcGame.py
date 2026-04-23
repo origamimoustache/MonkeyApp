@@ -184,7 +184,7 @@ with col2:
         icon=folium.Icon(color="red")
     ).add_to(m)
     
-    st_folium(m, width=1100, height=700)
+    st_folium(m, width=700, height=700)
 
 # ================== GAME PANEL ==================
 with col3:
