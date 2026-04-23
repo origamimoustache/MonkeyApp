@@ -296,7 +296,6 @@ with col3:
 # ------------------ FOOTER ------------------
 st.markdown("---")
 st.markdown("📊 Based on real primate occurrence data from:")
-st.markdown(
-    "Costa-Araújo et al. (2024). Primate biology, 11(1), 1–11. https://doi.org/10.5194/pb-11-1-2024"
-)
+st.markdown("Costa-Araújo et al. (2024). Primate biology, 11(1), 1–11. https://doi.org/10.5194/pb-11-1-2024")
+st.markdown("Game created by: Alex Cullen, Chuck Lawerence, Sidy Ndiaye, and Vaughn Notchey")
 
