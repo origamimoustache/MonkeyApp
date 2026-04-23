@@ -151,18 +151,28 @@ with col1:
 # ================== MAP ==================
 with col2:
     st.subheader("🗺️ Migration Map")
-    m = folium.Map(location=[-8, -55], zoom_start=5)
-    
-   # All points
+
+    # Create map centered on current location
+    m = folium.Map(
+        location=[current["lat"], current["lon"]],
+        zoom_start=6
+    )
+
+    # ------------------ NEXT LOCATION ------------------
+    next_index = (st.session_state.index + 1) % len(df)
+    next_point = df.iloc[next_index]
+
+    # ------------------ ALL POINTS ------------------
     for _, row in df.iterrows():
         folium.CircleMarker(
             location=[row["lat"], row["lon"]],
-            radius=5,
+            radius=4,
             color="green",
-            fill=True
+            fill=True,
+            fill_opacity=0.6
         ).add_to(m)
 
-    # Trail line
+    # ------------------ PATH TRAIL ------------------
     if len(st.session_state.path) > 1:
         folium.PolyLine(
             st.session_state.path,
@@ -170,21 +180,44 @@ with col2:
             weight=4
         ).add_to(m)
 
-    # Heatmap
+    # ------------------ HEATMAP ------------------
     if len(st.session_state.path_weights) > 0:
         heat_data = [
             [lat, lon, weight]
-            for (lat, lon), weight in zip(st.session_state.path, st.session_state.path_weights)
+            for (lat, lon), weight in zip(
+                st.session_state.path,
+                st.session_state.path_weights
+            )
         ]
         HeatMap(heat_data, radius=25).add_to(m)
 
-    # Current position marker
+    # ------------------ CURRENT LOCATION ------------------
     folium.Marker(
         location=[current["lat"], current["lon"]],
+        tooltip="Current Location",
         icon=folium.Icon(color="red")
     ).add_to(m)
-    
-    st_folium(m, width=900, height=700)
+
+    # ------------------ NEXT LOCATION (PREVIEW) ------------------
+    folium.Marker(
+        location=[next_point["lat"], next_point["lon"]],
+        tooltip=f"Next: {next_point['species']}",
+        icon=folium.Icon(color="orange", icon="arrow-right")
+    ).add_to(m)
+
+    # Optional: dashed line to next location
+    folium.PolyLine(
+        locations=[
+            [current["lat"], current["lon"]],
+            [next_point["lat"], next_point["lon"]]
+        ],
+        color="orange",
+        weight=2,
+        dash_array="5, 5"
+    ).add_to(m)
+
+    # ------------------ RENDER MAP ------------------
+    st_folium(m, width=None, height=650)
 
 # ================== GAME PANEL ==================
 with col3:
