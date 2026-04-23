@@ -168,10 +168,12 @@ with col1:
         HeatMap(heat_data, radius=25).add_to(m)
 
     # Current position marker
-    folium.Marker(
-        location=[current["lat"], current["lon"]],
-        icon=folium.Icon(color="red")
-    ).add_to(m)
+folium.Marker(
+    location=[current["lat"], current["lon"]],
+    icon=folium.Icon(color="red")
+).add_to(m)
+
+st_folium(m, width=1200, height=700)
 
 # ================== GAME PANEL ==================
 with col2:
