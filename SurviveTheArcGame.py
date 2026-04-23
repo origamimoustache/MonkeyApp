@@ -173,7 +173,11 @@ folium.Marker(
     icon=folium.Icon(color="red")
 ).add_to(m)
 
-st_folium(m, width=1200, height=700)
+st_folium(m, width=1100, height=700)
+
+# --- SPECIES ---
+    st.markdown("### 🐾 Species Here")
+    st.success(current["species"])
 
 # ================== GAME PANEL ==================
 with col2:
@@ -184,12 +188,8 @@ with col2:
     st.text_area("", st.session_state.message, height=120)
 
     # --- LOCATION ---
-    st.markdown("### 📍 Current Location")
+    st.markdown("### 📍 Current Location (Lon, Lat)")
     st.info(f"{current['lat']:.2f}, {current['lon']:.2f}")
-
-    # --- SPECIES ---
-    st.markdown("### 🐾 Species Here")
-    st.success(current["species"])
 
     # --- POPULATION ---
     st.markdown("### 🙈🙉🙊 Population")
