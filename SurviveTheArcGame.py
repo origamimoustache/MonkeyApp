@@ -13,6 +13,8 @@ st.set_page_config(
 )
 
 # ------------------ TITLE ------------------
+st.markdown("How can we improve? https://forms.gle/osnehRzaGogUJdx77")
+
 st.title("🌎 Survive the Arc of Deforestation")
 st.markdown("Explore primate migration and survival across a rapidly changing landscape.")
 
