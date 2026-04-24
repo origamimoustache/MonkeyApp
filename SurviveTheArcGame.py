@@ -248,11 +248,8 @@ with col3:
     st.markdown('<div class="population-box">', unsafe_allow_html=True)
     
     st.markdown("### 🙈🙉🙊 Population")
-    
-    # Progress bar
     st.progress(pop_clamped / 100)
-    
-    # Text display
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(f"**{get_population_display(pop_clamped)}**")
     
     if pop_clamped < 25:
