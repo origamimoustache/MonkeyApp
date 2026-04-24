@@ -293,11 +293,21 @@ with col3:
             st.session_state.population = 100
             st.session_state.index = 0
             st.session_state.message = "Your journey begins in the Amazon arc..."
+        
+            # Reset map-related state
+            st.session_state.path = []
+            st.session_state.path_weights = []
+            st.session_state.history = []
+        
+            # Reinitialize starting point
+            start = df.iloc[0]
+            st.session_state.path.append([start["lat"], start["lon"]])
+        
             st.rerun()
 
 # ------------------ FOOTER ------------------
 st.markdown("---")
-st.markdown("📊 Based on real primate occurrence data from:")
+st.markdown("Based on real primate occurrence data from:")
 st.markdown("Costa-Araújo et al. (2024). Primate biology, 11(1), 1–11. https://doi.org/10.5194/pb-11-1-2024")
 st.markdown("Game created by: Alex Cullen, Chuck Lawerence, Sidy Ndiaye, and Vaughn Notchey")
 
