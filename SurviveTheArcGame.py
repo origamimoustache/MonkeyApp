@@ -97,6 +97,7 @@ data = [
 df = pd.DataFrame(data, columns=["lat", "lon", "species"])
 
 # ------------------ FUNCTIONS ------------------
+
 def get_next_index(current_index):
     offsets = [-3, -2, -1, 1, 2, 3]
     while True:
@@ -116,13 +117,15 @@ def get_population_display(pop):
     if pop <= 0:
         return "💀 0 / 100"
     elif pop > 75:
-        return "🟢 Healthy 🐒🐒🐒🐒 " + f"{pop}/100"
+        return f"🟢 🐒🐒🐒🐒🐒 {pop}/100"
     elif pop > 50:
-        return "🟡 Stable 🐒🐒🐒 " + f"{pop}/100"
+        return f"🟡 🐒🐒🐒🐒 {pop}/100"
     elif pop > 25:
-        return "🟠 Endangered 🐒🐒 " + f"{pop}/100"
+        return f"🟠 🐒🐒🐒 {pop}/100"
+    elif pop > 10:
+        return f"🔴 🐒🐒 {pop}/100"
     else:
-        return "🔴 Critical 🐒 " + f"{pop}/100"
+        return f"🔴 🐒 {pop}/100"
 
 def get_species_modifier(species):
     if "Ateles" in species:
@@ -131,7 +134,42 @@ def get_species_modifier(species):
         return 0.8
     return 1
 
+def show_game_over_popup():
+    st.markdown("""
+    <div style="
+        position: fixed;
+        top:0; left:0;
+        width:100%; height:100%;
+        background-color: rgba(0,0,0,0.75);
+        z-index:9998;">
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -20%);
+        width: 60%;
+        background-color: #111;
+        padding: 30px;
+        border-radius: 15px;
+        border: 3px solid red;
+        color: white;
+        z-index: 9999;">
+        <h2 style="text-align:center;">💀 Extinction</h2>
+        <p style="text-align:center;">The population has collapsed.</p>
+        <hr>
+        <p>
+        Deforestation destroys habitats, isolates populations, and accelerates biodiversity loss.
+        It also impacts climate systems worldwide by reducing carbon storage.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 # ------------------ SESSION STATE ------------------
+
 if "index" not in st.session_state:
     st.session_state.index = 0
 
@@ -144,32 +182,31 @@ if "population" not in st.session_state:
 if "message" not in st.session_state:
     st.session_state.message = "Your journey begins in the Amazon arc..."
 
-if "history" not in st.session_state:
-    st.session_state.history = []
-
 if "path" not in st.session_state:
     st.session_state.path = []
 
 if "path_weights" not in st.session_state:
     st.session_state.path_weights = []
 
-# Initialize starting point
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# Initialize starting path
 if len(st.session_state.path) == 0:
     start = df.iloc[st.session_state.index]
     st.session_state.path.append([start["lat"], start["lon"]])
 
-# ------------------ CURRENT STATE ------------------
+# ------------------ CURRENT ------------------
 current = df.iloc[st.session_state.index]
-next_index = st.session_state.next_index
-next_point = df.iloc[next_index]
+next_point = df.iloc[st.session_state.next_index]
 pop = st.session_state.population
 
 # ------------------ LAYOUT ------------------
-col1, col2, col3 = st.columns([1, 2, 1])
+col1, col2, col3 = st.columns([1,2,1])
 
 # ------------------ LEFT PANEL ------------------
 with col1:
-    st.markdown("### 📍 Current Location (Lon, Lat)")
+    st.markdown("### 📍 Current Location")
     st.info(f"{current['lat']:.2f}, {current['lon']:.2f}")
 
     st.markdown("### 🐾 Species Here")
@@ -179,85 +216,64 @@ with col1:
 with col2:
     st.subheader("🗺️ Migration Map")
 
-    m = folium.Map(
-        location=[current["lat"], current["lon"]],
-        zoom_start=6
-    )
+    m = folium.Map(location=[current["lat"], current["lon"]], zoom_start=6)
 
     for _, row in df.iterrows():
         folium.CircleMarker(
             location=[row["lat"], row["lon"]],
             radius=4,
             color="green",
-            fill=True,
-            fill_opacity=0.6
+            fill=True
         ).add_to(m)
 
+    # Path trail
     if len(st.session_state.path) > 1:
-        folium.PolyLine(
-            st.session_state.path,
-            color="blue",
-            weight=4
-        ).add_to(m)
+        folium.PolyLine(st.session_state.path, color="blue").add_to(m)
 
+    # Heatmap
     if len(st.session_state.path_weights) > 0:
         heat_data = [
             [lat, lon, weight]
-            for (lat, lon), weight in zip(
-                st.session_state.path,
-                st.session_state.path_weights
-            )
+            for (lat, lon), weight in zip(st.session_state.path, st.session_state.path_weights)
         ]
-        HeatMap(heat_data, radius=25).add_to(m)
+        HeatMap(heat_data).add_to(m)
 
+    # Current marker
     folium.Marker(
         location=[current["lat"], current["lon"]],
-        tooltip="Current Location",
         icon=folium.Icon(color="red")
     ).add_to(m)
 
+    # Next preview
     folium.Marker(
         location=[next_point["lat"], next_point["lon"]],
-        tooltip=f"Next: {next_point['species']}",
-        icon=folium.Icon(color="orange", icon="arrow-right")
+        icon=folium.Icon(color="orange")
     ).add_to(m)
 
-    folium.PolyLine(
-        locations=[
-            [current["lat"], current["lon"]],
-            [next_point["lat"], next_point["lon"]]
-        ],
-        color="orange",
-        weight=2,
-        dash_array="5, 5"
-    ).add_to(m)
-
-    st_folium(m, width=None, height=650)
+    st_folium(m, height=600)
 
 # ------------------ GAME PANEL ------------------
 with col3:
     st.subheader("🐒 Survival Panel")
 
+    # STORY BOX
     st.markdown("### 📖 Story Log")
     st.text_area("", st.session_state.message, height=120)
 
-    # Clamp for safety
+    # POPULATION
     pop_clamped = max(0, min(pop, 100))
-    
-    # Start box
     st.markdown("### 🙈🙉🙊 Population")
-
-    pop_clamped = max(0, min(pop, 100))
-    
     st.progress(pop_clamped / 100)
     st.info(get_population_display(pop_clamped))
-    
-    if pop_clamped < 25:
-        st.warning("⚠️ Critical population!")
-    
-    # End box
-    st.markdown('</div>', unsafe_allow_html=True)
 
+    if pop_clamped < 25 and pop_clamped > 0:
+        st.warning("⚠️ Critical population!")
+
+    # GAME OVER POPUP
+    if pop_clamped <= 0:
+        show_game_over_popup()
+
+    # DECISION
     st.markdown("### 🎮 Choose Your Path")
 
     choice = st.radio(
@@ -280,44 +296,28 @@ with col3:
 
         loss = int(loss * get_species_modifier(current["species"]))
 
+        # SAFE POPULATION UPDATE
         st.session_state.population = max(0, pop - loss)
+
+        # MESSAGE LOG
         st.session_state.message += "\n\n" + update_message(choice, loss)
 
-        # move to stored next
+        # MOVE
         st.session_state.index = st.session_state.next_index
-
-        # generate new next ONLY here
         st.session_state.next_index = get_next_index(st.session_state.index)
 
-        new_point = [
-            df.iloc[st.session_state.index]["lat"],
-            df.iloc[st.session_state.index]["lon"]
-        ]
-
-        st.session_state.path.append(new_point)
+        new_point = df.iloc[st.session_state.index]
+        st.session_state.path.append([new_point["lat"], new_point["lon"]])
         st.session_state.path_weights.append(loss)
+
         st.session_state.history.append(f"{choice} → -{loss}")
 
         st.rerun()
 
+    # RESTART
     if st.session_state.population <= 0:
-        st.error("💀 You did not survive the migration.")
-
         if st.button("Restart"):
-            st.session_state.population = 100
-            st.session_state.index = 0
-            st.session_state.message = "Your journey begins in the Amazon arc..."
-
-            st.session_state.path = []
-            st.session_state.path_weights = []
-            st.session_state.history = []
-
-            # reset next index too
-            st.session_state.next_index = get_next_index(0)
-
-            start = df.iloc[0]
-            st.session_state.path.append([start["lat"], start["lon"]])
-
+            st.session_state.clear()
             st.rerun()
 
 # ------------------ FOOTER ------------------
