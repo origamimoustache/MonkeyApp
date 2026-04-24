@@ -283,8 +283,7 @@ with col3:
         if st.button("🔁 Restart Game", type="primary"):
             st.session_state.clear()
             st.rerun()
-            
-        st.stop() # Stops execution here so movement controls don't render
+            st.stop()
 
     # VICTORY STATE (Optional check if they visit everything)
     if len(st.session_state.visited_indices) >= len(df):
