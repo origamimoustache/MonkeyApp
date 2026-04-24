@@ -245,14 +245,15 @@ with col3:
     pop_clamped = max(0, min(pop, 100))
     
     # Start box
-    st.markdown('<div class="population-box">', unsafe_allow_html=True) 
-    st.markdown("### 🙈🙉🙊 Population") 
-    st.progress(pop / 100 if pop > 0 else 0) 
-    st.info(get_population_display(pop))
+    st.markdown("### 🙈🙉🙊 Population")
+
+    pop_clamped = max(0, min(pop, 100))
     
+    st.progress(pop_clamped / 100)
+    st.info(get_population_display(pop_clamped))
     
     if pop_clamped < 25:
-        st.markdown("⚠️ **Critical population!**")
+        st.warning("⚠️ Critical population!")
     
     # End box
     st.markdown('</div>', unsafe_allow_html=True)
