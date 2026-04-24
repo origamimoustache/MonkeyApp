@@ -200,41 +200,60 @@ with col1:
 with col2:
     st.subheader("🗺️ Migration Map")
 
-    m = folium.Map(location=[current["lat"], current["lon"]], zoom_start=8)
+    m = folium.Map(
+        location=[current["lat"], current["lon"]],
+        zoom_start=6
+    )
 
     for _, row in df.iterrows():
         folium.CircleMarker(
             location=[row["lat"], row["lon"]],
             radius=4,
             color="green",
-            fill=True
+            fill=True,
+            fill_opacity=0.6
         ).add_to(m)
 
-    # Path trail
     if len(st.session_state.path) > 1:
-        folium.PolyLine(st.session_state.path, color="blue").add_to(m)
+        folium.PolyLine(
+            st.session_state.path,
+            color="blue",
+            weight=4
+        ).add_to(m)
 
-    # Heatmap
     if len(st.session_state.path_weights) > 0:
         heat_data = [
             [lat, lon, weight]
-            for (lat, lon), weight in zip(st.session_state.path, st.session_state.path_weights)
+            for (lat, lon), weight in zip(
+                st.session_state.path,
+                st.session_state.path_weights
+            )
         ]
-        HeatMap(heat_data).add_to(m)
+        HeatMap(heat_data, radius=25).add_to(m)
 
-    # Current marker
     folium.Marker(
         location=[current["lat"], current["lon"]],
+        tooltip="Current Location",
         icon=folium.Icon(color="red")
     ).add_to(m)
 
-    # Next preview
     folium.Marker(
         location=[next_point["lat"], next_point["lon"]],
-        icon=folium.Icon(color="orange")
+        tooltip=f"Next: {next_point['species']}",
+        icon=folium.Icon(color="orange", icon="arrow-right")
     ).add_to(m)
 
-    st_folium(m, width=None, height=600)
+    folium.PolyLine(
+        locations=[
+            [current["lat"], current["lon"]],
+            [next_point["lat"], next_point["lon"]]
+        ],
+        color="orange",
+        weight=2,
+        dash_array="5, 5"
+    ).add_to(m)
+
+    st_folium(m, width=None, height=650)
 
 # ------------------ GAME PANEL ------------------
 with col3:
