@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import random
 import folium
-import time
+import math
 from folium.plugins import HeatMap
 from streamlit_folium import st_folium
 
@@ -21,6 +21,7 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
 # ------------------ TITLE ------------------
 st.markdown("How can we improve? https://forms.gle/osnehRzaGogUJdx77")
 
@@ -34,6 +35,7 @@ st.markdown(
     "possible hybridization zones where closely related species overlap. Overall, the dataset provides important "
     "information for conservation efforts and for studying biodiversity patterns in a rapidly changing environment."
 )
+
 # ------------------ DATA ------------------
 data = [
     (-3.256066, -52.101795, "Alouatta belzebul"),
@@ -97,13 +99,26 @@ data = [
 df = pd.DataFrame(data, columns=["lat", "lon", "species"])
 
 # ------------------ FUNCTIONS ------------------
+def get_distance(lat1, lon1, lat2, lon2):
+    """Calculates simple Euclidean distance between two points."""
+    return math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
 
 def get_next_index(current_index):
-    offsets = [-3, -2, -1, 1, 2, 3]
-    while True:
-        new_index = (current_index + random.choice(offsets)) % len(df)
-        if new_index != current_index:
-            return new_index
+    """Finds a geographically close index rather than a random row offset."""
+    current_row = df.iloc[current_index]
+    distances = []
+    
+    for i, row in df.iterrows():
+        if i != current_index:
+            dist = get_distance(current_row['lat'], current_row['lon'], row['lat'], row['lon'])
+            distances.append((i, dist))
+            
+    # Sort by closest distance
+    distances.sort(key=lambda x: x[1])
+    
+    # Pick randomly from the 4 closest locations to maintain some variability
+    closest_indices = [x[0] for x in distances[:4]]
+    return random.choice(closest_indices)
 
 def update_message(choice, loss):
     if choice == "🌳 Stay in forest (safe)":
@@ -134,60 +149,9 @@ def get_species_modifier(species):
         return 0.8
     return 1
 
-def show_game_over_popup():
-    st.markdown("""
-    <div style="
-        position: fixed;
-        top:0; left:0;
-        width:100%; height:100%;
-        background-color: rgba(0,0,0,0.75);
-        z-index:9998;">
-    </div>
-
-    <div style="
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%, -20%);
-        width: 60%;
-        background-color: #111;
-        padding: 30px;
-        border-radius: 15px;
-        border: 3px solid red;
-        color: white;
-        z-index: 9999;
-        text-align: center;
-        box-shadow: 0px 0px 25px rgba(0,0,0,0.9);
-    ">
-        <h1>💀 Extinction Event</h1>
-
-        <p>Your population has collapsed.</p>
-
-        <hr>
-
-        <p>
-        Deforestation fragments habitats, reduces biodiversity,
-        and disrupts ecological balance across entire ecosystems.
-        </p>
-
-        <p>
-        Its impacts extend beyond wildlife — accelerating climate change,
-        reducing carbon storage, and destabilizing global systems.
-        </p>
-
-        <p style="margin-top:20px; font-weight:bold;">
-        Every movement matters in a fragile ecosystem.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("❌ Close"):
-        st.session_state.show_death_popup = False
-        st.rerun()
 # ------------------ SESSION STATE ------------------
-
 if "index" not in st.session_state:
-    st.session_state.index = 0
+    st.session_state.index = random.randint(0, len(df)-1) # Start at a random spot
 
 if "next_index" not in st.session_state:
     st.session_state.next_index = get_next_index(st.session_state.index)
@@ -210,9 +174,6 @@ if "history" not in st.session_state:
 if len(st.session_state.path) == 0:
     start = df.iloc[st.session_state.index]
     st.session_state.path.append([start["lat"], start["lon"]])
-
-if "show_death_popup" not in st.session_state:
-    st.session_state.show_death_popup = False
 
 # ------------------ CURRENT ------------------
 current = df.iloc[st.session_state.index]
@@ -284,22 +245,28 @@ with col3:
     st.progress(pop_clamped / 100)
     st.info(get_population_display(pop_clamped))
 
-    if pop_clamped < 25 and pop_clamped > 0:
-        st.warning("⚠️ Critical population!")
-
-    # GAME OVER POPUP
+    # GAME OVER STATE
     if pop_clamped <= 0:
-        show_game_over_popup()
-    
-        st.markdown("### 🔁 Game Over Options")
-    
-        if st.button("Restart Game"):
+        st.error("💀 **Extinction Event:** Your population has collapsed.")
+        st.markdown(
+            "> Deforestation fragments habitats, reduces biodiversity, "
+            "and disrupts ecological balance across entire ecosystems. "
+            "Its impacts extend beyond wildlife — accelerating climate change, "
+            "reducing carbon storage, and destabilizing global systems.\n\n"
+            "**Every movement matters in a fragile ecosystem.**"
+        )
+        
+        if st.button("🔁 Restart Game", type="primary"):
             st.session_state.clear()
             st.rerun()
-    
-        st.stop()
+            
+        st.stop() # Stops execution here so movement controls don't render
 
-    # DECISION
+    # LOW POP WARNING
+    if pop_clamped < 25:
+        st.warning("⚠️ Critical population!")
+
+    # DECISION (Only renders if game is active due to st.stop() above)
     st.markdown("### 🎮 Choose Your Path")
 
     choice = st.radio(
@@ -339,14 +306,6 @@ with col3:
         st.session_state.history.append(f"{choice} → -{loss}")
 
         st.rerun()
-
-    # RESTART
-    if st.session_state.population <= 0:
-        st.session_state.show_death_popup = True
-
-    if st.session_state.show_death_popup:
-        show_game_over_popup()
-        st.stop()
 
 # ------------------ FOOTER ------------------
 st.markdown("---")
