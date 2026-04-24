@@ -27,11 +27,11 @@ st.markdown("How can we improve? https://forms.gle/osnehRzaGogUJdx77")
 st.title("🌎 Survive the Arc of Deforestation")
 st.markdown("Explore primate migration and survival across a rapidly changing landscape.")
 st.markdown(
-    "Costa-Araújo et al. (2024) present a dataset of 192 new occurrence records of 22 primate species"
-    "and subspecies collected from the Arc of Deforestation in Brazil during field expeditions from 2015 to 2018." 
-    "These data improve scientific understanding of primate distribution in a region heavily affected by" 
-    "deforestation and habitat fragmentation. The study identifies range extensions for several species and suggests"
-    "possible hybridization zones where closely related species overlap. Overall, the dataset provides important"
+    "Costa-Araújo et al. (2024) present a dataset of 192 new occurrence records of 22 primate species "
+    "and subspecies collected from the Arc of Deforestation in Brazil during field expeditions from 2015 to 2018. " 
+    "These data improve scientific understanding of primate distribution in a region heavily affected by " 
+    "deforestation and habitat fragmentation. The study identifies range extensions for several species and suggests "
+    "possible hybridization zones where closely related species overlap. Overall, the dataset provides important "
     "information for conservation efforts and for studying biodiversity patterns in a rapidly changing environment."
 )
 # ------------------ DATA ------------------
