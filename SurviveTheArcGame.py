@@ -11,13 +11,29 @@ st.set_page_config(
     page_title="Survive the Arc",
     layout="wide"
 )
-
+st.markdown("""
+<style>
+.population-box {
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #0e1117;
+}
+</style>
+""", unsafe_allow_html=True)
 # ------------------ TITLE ------------------
 st.markdown("How can we improve? https://forms.gle/osnehRzaGogUJdx77")
 
 st.title("🌎 Survive the Arc of Deforestation")
 st.markdown("Explore primate migration and survival across a rapidly changing landscape.")
-
+st.markdown(
+    "Costa-Araújo et al. (2024) present a dataset of 192 new occurrence records of 22 primate species"
+    "and subspecies collected from the Arc of Deforestation in Brazil during field expeditions from 2015 to 2018." 
+    "These data improve scientific understanding of primate distribution in a region heavily affected by" 
+    "deforestation and habitat fragmentation. The study identifies range extensions for several species and suggests"
+    "possible hybridization zones where closely related species overlap. Overall, the dataset provides important"
+    "information for conservation efforts and for studying biodiversity patterns in a rapidly changing environment."
+)
 # ------------------ DATA ------------------
 data = [
     (-3.256066, -52.101795, "Alouatta belzebul"),
@@ -161,7 +177,7 @@ with col2:
     )
 
     # ------------------ NEXT LOCATION ------------------
-    next_index = (st.session_state.index + 1) % len(df)
+    next_index = random.randint(0, len(df) - 1)
     next_point = df.iloc[next_index]
 
     # ------------------ ALL POINTS ------------------
@@ -230,13 +246,16 @@ with col3:
     st.text_area("", st.session_state.message, height=120)
 
     # --- POPULATION ---
+    st.markdown('<div class="population-box">', unsafe_allow_html=True)
+    
     st.markdown("### 🙈🙉🙊 Population")
     st.progress(pop / 100 if pop > 0 else 0)
     st.info(get_population_display(pop))
 
     if pop < 25:
         st.error("⚠️ Critical population!")
-    
+
+    st.markdown('</div>', unsafe_allow_html=True)
     # --- CHOICES (ALWAYS VISIBLE) ---
     st.markdown("### 🎮 Choose Your Path")
 
@@ -270,7 +289,7 @@ with col3:
             st.session_state.message += "\n\n" + update_message(choice, loss)
         
             # update location
-            st.session_state.index = (st.session_state.index + 1) % len(df)
+            st.session_state.index = random.randint(0, len(df) - 1)
         
             new_point = [
                 df.iloc[st.session_state.index]["lat"],
