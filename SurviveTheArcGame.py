@@ -195,7 +195,7 @@ with col1:
 with col2:
     st.subheader("🗺️ Migration Map")
 
-    m = folium.Map(location=[current["lat"], current["lon"]], zoom_start=6)
+    m = folium.Map(location=[current["lat"], current["lon"]], zoom_start=8)
 
     for _, row in df.iterrows():
         folium.CircleMarker(
