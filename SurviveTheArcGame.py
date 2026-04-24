@@ -160,27 +160,30 @@ def show_game_over_popup():
         box-shadow: 0px 0px 25px rgba(0,0,0,0.9);
     ">
         <h1>💀 Extinction Event</h1>
-        <p style="font-size:18px;">
-            Your population has collapsed.
-        </p>
+
+        <p>Your population has collapsed.</p>
 
         <hr>
 
-        <p style="font-size:16px;">
-            Deforestation fragments habitats, reduces biodiversity,
-            and disrupts ecological balance across entire ecosystems.
+        <p>
+        Deforestation fragments habitats, reduces biodiversity,
+        and disrupts ecological balance across entire ecosystems.
         </p>
 
-        <p style="font-size:16px;">
-            Its impacts extend beyond wildlife — accelerating climate change,
-            reducing carbon storage, and destabilizing global systems.
+        <p>
+        Its impacts extend beyond wildlife — accelerating climate change,
+        reducing carbon storage, and destabilizing global systems.
         </p>
 
         <p style="margin-top:20px; font-weight:bold;">
-            Every movement matters in a fragile ecosystem.
+        Every movement matters in a fragile ecosystem.
         </p>
     </div>
     """, unsafe_allow_html=True)
+
+    if st.button("❌ Close"):
+        st.session_state.show_death_popup = False
+        st.rerun()
 # ------------------ SESSION STATE ------------------
 
 if "index" not in st.session_state:
@@ -204,10 +207,12 @@ if "path_weights" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Initialize starting path
 if len(st.session_state.path) == 0:
     start = df.iloc[st.session_state.index]
     st.session_state.path.append([start["lat"], start["lon"]])
+
+if "show_death_popup" not in st.session_state:
+    st.session_state.show_death_popup = False
 
 # ------------------ CURRENT ------------------
 current = df.iloc[st.session_state.index]
@@ -337,9 +342,11 @@ with col3:
 
     # RESTART
     if st.session_state.population <= 0:
-        if st.button("Restart"):
-            st.session_state.clear()
-            st.rerun()
+        st.session_state.show_death_popup = True
+
+    if st.session_state.show_death_popup:
+        show_game_over_popup()
+        st.stop()
 
 # ------------------ FOOTER ------------------
 st.markdown("---")
