@@ -246,11 +246,10 @@ with col3:
     
     # Start box
     st.markdown('<div class="population-box">', unsafe_allow_html=True)
-    
     st.markdown("### 🙈🙉🙊 Population")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     st.progress(pop_clamped / 100)
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown(f"**{get_population_display(pop_clamped)}**")
     
     if pop_clamped < 25:
         st.markdown("⚠️ **Critical population!**")
