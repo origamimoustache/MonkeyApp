@@ -103,22 +103,24 @@ def get_distance(lat1, lon1, lat2, lon2):
     """Calculates simple Euclidean distance between two points."""
     return math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
 
-def get_next_index(current_index):
-    """Finds a geographically close index rather than a random row offset."""
+def get_next_index(current_index, visited_indices):
+    """Finds the strictly closest unvisited index."""
     current_row = df.iloc[current_index]
-    distances = []
+    best_dist = float('inf')
+    best_index = None
     
     for i, row in df.iterrows():
-        if i != current_index:
+        if i not in visited_indices:
             dist = get_distance(current_row['lat'], current_row['lon'], row['lat'], row['lon'])
-            distances.append((i, dist))
-            
-    # Sort by closest distance
-    distances.sort(key=lambda x: x[1])
-    
-    # Pick randomly from the 4 closest locations to maintain some variability
-    closest_indices = [x[0] for x in distances[:4]]
-    return random.choice(closest_indices)
+            if dist < best_dist:
+                best_dist = dist
+                best_index = i
+                
+    # Fallback in case the player somehow visits every single point
+    if best_index is None:
+        return current_index 
+        
+    return best_index
 
 def update_message(choice, loss):
     if choice == "🌳 Stay in forest (safe)":
@@ -153,8 +155,11 @@ def get_species_modifier(species):
 if "index" not in st.session_state:
     st.session_state.index = random.randint(0, len(df)-1) # Start at a random spot
 
+if "visited_indices" not in st.session_state:
+    st.session_state.visited_indices = [st.session_state.index]
+
 if "next_index" not in st.session_state:
-    st.session_state.next_index = get_next_index(st.session_state.index)
+    st.session_state.next_index = get_next_index(st.session_state.index, st.session_state.visited_indices)
 
 if "population" not in st.session_state:
     st.session_state.population = 100
@@ -262,6 +267,14 @@ with col3:
             
         st.stop() # Stops execution here so movement controls don't render
 
+    # VICTORY STATE (Optional check if they visit everything)
+    if len(st.session_state.visited_indices) >= len(df):
+        st.success("🎉 **Migration Complete!** Your population successfully navigated the entire Arc.")
+        if st.button("🔁 Restart Game", type="primary"):
+            st.session_state.clear()
+            st.rerun()
+        st.stop()
+
     # LOW POP WARNING
     if pop_clamped < 25:
         st.warning("⚠️ Critical population!")
@@ -297,7 +310,12 @@ with col3:
 
         # MOVE
         st.session_state.index = st.session_state.next_index
-        st.session_state.next_index = get_next_index(st.session_state.index)
+        
+        # Add the new current index to the visited list
+        st.session_state.visited_indices.append(st.session_state.index)
+        
+        # Determine the next target
+        st.session_state.next_index = get_next_index(st.session_state.index, st.session_state.visited_indices)
 
         new_point = df.iloc[st.session_state.index]
         st.session_state.path.append([new_point["lat"], new_point["lon"]])
@@ -311,5 +329,4 @@ with col3:
 st.markdown("---")
 st.markdown("Based on real primate occurrence data from:")
 st.markdown("Costa-Araújo et al. (2024). Primate biology, 11(1), 1–11. https://doi.org/10.5194/pb-11-1-2024")
-st.markdown("Game created by: Alex Cullen, Chuck Lawerence, Sidy Ndiaye, and Vaughn Notchey")
-
+st.markdown("Game created by: Alex Cullen, Chuck Lawrence, Sidy Ndiaye, and Vaughn Notchey")
