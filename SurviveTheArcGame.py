@@ -143,9 +143,7 @@ def show_game_over_popup():
         background-color: rgba(0,0,0,0.75);
         z-index:9998;">
     </div>
-    """, unsafe_allow_html=True)
 
-    st.markdown("""
     <div style="
         position: fixed;
         top: 20%;
@@ -157,17 +155,32 @@ def show_game_over_popup():
         border-radius: 15px;
         border: 3px solid red;
         color: white;
-        z-index: 9999;">
-        <h2 style="text-align:center;">💀 Extinction</h2>
-        <p style="text-align:center;">The population has collapsed.</p>
+        z-index: 9999;
+        text-align: center;
+        box-shadow: 0px 0px 25px rgba(0,0,0,0.9);
+    ">
+        <h1>💀 Extinction Event</h1>
+        <p style="font-size:18px;">
+            Your population has collapsed.
+        </p>
+
         <hr>
-        <p>
-        Deforestation destroys habitats, isolates populations, and accelerates biodiversity loss.
-        It also impacts climate systems worldwide by reducing carbon storage.
+
+        <p style="font-size:16px;">
+            Deforestation fragments habitats, reduces biodiversity,
+            and disrupts ecological balance across entire ecosystems.
+        </p>
+
+        <p style="font-size:16px;">
+            Its impacts extend beyond wildlife — accelerating climate change,
+            reducing carbon storage, and destabilizing global systems.
+        </p>
+
+        <p style="margin-top:20px; font-weight:bold;">
+            Every movement matters in a fragile ecosystem.
         </p>
     </div>
     """, unsafe_allow_html=True)
-
 # ------------------ SESSION STATE ------------------
 
 if "index" not in st.session_state:
@@ -272,6 +285,14 @@ with col3:
     # GAME OVER POPUP
     if pop_clamped <= 0:
         show_game_over_popup()
+    
+        st.markdown("### 🔁 Game Over Options")
+    
+        if st.button("Restart Game"):
+            st.session_state.clear()
+            st.rerun()
+    
+        st.stop()
 
     # DECISION
     st.markdown("### 🎮 Choose Your Path")
